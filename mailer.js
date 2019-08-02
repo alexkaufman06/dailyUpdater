@@ -29,9 +29,6 @@ var transporter = nodemailer.createTransport({
   }
 });
 
-// https://stackoverflow.com/questions/43284152/error-when-sending-email-using-nodemailer
-// https://nodemailer.com/smtp/oauth2/#oauth-3lo
-
 transporter.sendMail(mailOptions, function(error, info){
   if (error) {
     console.log(error);
