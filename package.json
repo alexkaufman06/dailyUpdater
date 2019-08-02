@@ -1,10 +1,11 @@
 {
-  "name": "dailyUpdater",
+  "name": "daily_updater",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/wdio wdio.conf.js"
+    "test": "./node_modules/.bin/wdio wdio.conf.js",
+    "email": "node mailer.js"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +18,9 @@
     "chromedriver": "^75.1.0",
     "wdio-chromedriver-service": "^5.0.2",
     "wdio-selenium-standalone-service": "0.0.12"
+  },
+  "dependencies": {
+    "nodemailer": "^6.3.0",
+    "xoauth2": "^1.2.0"
   }
 }
