@@ -1,6 +1,6 @@
-Feature: Simple test of webdriver.io site
+Feature: Check basic website functionality
 
-  Scenario: Get started page title and link
-    Given I have navigated to webdriver.io
-    When I click get started and navigate to that page
+  Scenario: Visit my website and click button
+    Given I have navigated to my website
+    When I click the ABOUT ME button
     Then I expect that the title of the page is correct

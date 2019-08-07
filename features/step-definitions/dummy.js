@@ -2,17 +2,21 @@ const defineSupportCode = require('cucumber').defineSupportCode;
 const assert = require('assert');
 
 defineSupportCode(function({ Given, When, Then }) {
-  Given(/^I have navigated to webdriver.io$/, function() {
-    browser.url('https://webdriver.io/');
+  
+  Given(/^I have navigated to my website$/, function() {
+    browser.url('http://alexkaufman06.github.io');
   });
-  When('I click get started and navigate to that page', function () {
-    const getStartedButton = $('.buttonWrapper > a');
+
+  When('I click the ABOUT ME button', function () {
+    const getStartedButton = $('.btn-xl');
     getStartedButton.click();
     browser.pause(1500);
-    browser.saveScreenshot('./features/errorShots/screenshot.png');
+    browser.saveScreenshot('./features/errorShots/about-me.png');
   });
+
   Then('I expect that the title of the page is correct', function() {
     var title = browser.getTitle();
-    assert.equal(title, "Getting Started · WebdriverIO");
+    assert.equal(title, "Alex Kaufman | Portfolio");
   });
+
 });
