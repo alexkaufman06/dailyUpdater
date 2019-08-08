@@ -27,9 +27,9 @@ cache:
     - node_modules
 jobs:
   include:
-    -stage: email
+    - stage: email
       script: 
         - npm run email
-    -stage: test
+    - stage: test
       script: 
         - npm run test
