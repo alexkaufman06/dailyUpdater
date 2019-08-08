@@ -28,6 +28,8 @@ cache:
 jobs:
   include:
     -stage: email
-      script: npm run email
+      script: 
+        - npm run email
     -stage: test
-      script: npm run test
+      script: 
+        - npm run test
