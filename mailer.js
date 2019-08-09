@@ -3,6 +3,24 @@ const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 require('dotenv').config();
 
+const dayOfWeek = () => {
+  var a = new Date();
+  var days = new Array(7);
+  days[0] = "Sunday";
+  days[1] = "Monday";
+  days[2] = "Tuesday";
+  days[3] = "Wednesday";
+  days[4] = "Thursday";
+  days[5] = "Friday";
+  days[6] = "Saturday";
+  return days[a.getDay()];
+}
+
+const html = `
+<p>It's ${dayOfWeek()},</p>
+<p>Here's an update for the day:</p>
+`;
+
 
 const oauth2Client = new OAuth2(
   process.env.CLIENT_ID, 
@@ -31,9 +49,9 @@ const smtpTransport = nodemailer.createTransport({
 const mailOptions = {
   from: process.env.EMAIL,
   to: process.env.EMAIL,
-  subject: "<DATE> Update",
+  subject: `${ new Date().toLocaleDateString() } Update`,
   generateTextFromHTML: true,
-  html: "<b>IT WORKS!</b>"
+  html: html
 };
 
 smtpTransport.sendMail(mailOptions, (error, response) => {
