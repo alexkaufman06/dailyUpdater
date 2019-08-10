@@ -4,26 +4,6 @@ language: node_js
 node_js:
   - "10"
 env:
-  global:
-    - CXX=g++-4.8
-    - DISPLAY=:99.0
-    - CHROME_BIN=/usr/bin/google-chrome
-addons:
-  chrome: stable
-before_install:
-  - google-chrome-stable --headless --disable-gpu
-before_script:
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-  - sudo apt-get update
-  - sudo apt-get install -y libappindicator1 fonts-liberation
-  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  - sudo dpkg -i google-chrome*.deb
-  - npm install --dev
-  - npm run run & # to run my web server in the background
-  - sleep 5 # give web server some time to start
-cache:
-  directories:
-    - node_modules
+  - CXX=g++-4.8
 script:
   - npm run email
