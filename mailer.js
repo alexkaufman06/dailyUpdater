@@ -21,6 +21,15 @@ const html = `
 <p>Here's an update for the day:</p>
 `;
 
+// let url = `https://api.openweathermap.org/data/2.5/weather?q=Portland&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`
+
+// request(url, function (err, response, body) {
+//   if(err){
+//     console.log('error:', error);
+//   } else {
+//     console.log('DATA: \n', body);
+//   }
+// });
 
 const oauth2Client = new OAuth2(
   process.env.CLIENT_ID, 
