@@ -7,3 +7,17 @@ The goal of this repository is to gather data every morning and email to interes
 * Stock Market
 * CraigsList
 * Traffic
+
+## Travis CI Customization
+
+Running Multiple Jobs:
+```
+jobs:
+  include:
+    - stage: email
+      script: 
+        - npm run email
+    - stage: test
+      script: 
+        - npm run test
+```
