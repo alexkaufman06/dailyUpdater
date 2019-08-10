@@ -1,7 +1,10 @@
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
+const axios = require('axios');
 const OAuth2 = google.auth.OAuth2;
 require('dotenv').config();
+
+const homeWeatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`;
 
 const dayOfWeek = () => {
   var a = new Date();
@@ -16,54 +19,51 @@ const dayOfWeek = () => {
   return days[a.getDay()];
 }
 
-const html = `
-<p>It's ${dayOfWeek()},</p>
-<p>Here's an update for the day:</p>
-`;
+function getHomeWeather() {
+  return axios.get(homeWeatherURL);
+}
 
-// let url = `https://api.openweathermap.org/data/2.5/weather?q=Portland&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`
+getHomeWeather().then(function (response) {
+  const html = `
+    <p>It's ${dayOfWeek()},</p>
+    <p>Here's the weather at home:</p>
+    ${response.data}
+  `;
 
-// request(url, function (err, response, body) {
-//   if(err){
-//     console.log('error:', error);
-//   } else {
-//     console.log('DATA: \n', body);
-//   }
-// });
+  const oauth2Client = new OAuth2(
+    process.env.CLIENT_ID, 
+    process.env.CLIENT_SECRET, 
+    "https://developers.google.com/oauthplayground" 
+  );
 
-const oauth2Client = new OAuth2(
-  process.env.CLIENT_ID, 
-  process.env.CLIENT_SECRET, 
-  "https://developers.google.com/oauthplayground" 
-);
+  oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN
+  });
 
-oauth2Client.setCredentials({
-  refresh_token: process.env.REFRESH_TOKEN
-});
+  const accessToken = oauth2Client.getAccessToken()
 
-const accessToken = oauth2Client.getAccessToken()
+  const smtpTransport = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: 'OAuth2',
+      user: process.env.EMAIL,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken: process.env.REFRESH_TOKEN,
+      accessToken: process.env.ACCESS_TOKEN
+     }
+  });
 
-const smtpTransport = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    type: 'OAuth2',
-    user: process.env.EMAIL,
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    refreshToken: process.env.REFRESH_TOKEN,
-    accessToken: process.env.ACCESS_TOKEN
-   }
-});
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: process.env.EMAIL,
+    subject: `${ new Date().toLocaleDateString() } Update`,
+    generateTextFromHTML: true,
+    html: html
+  };
 
-const mailOptions = {
-  from: process.env.EMAIL,
-  to: process.env.EMAIL,
-  subject: `${ new Date().toLocaleDateString() } Update`,
-  generateTextFromHTML: true,
-  html: html
-};
-
-smtpTransport.sendMail(mailOptions, (error, response) => {
-  error ? console.log(error) : console.log(response);
-  smtpTransport.close();
+  smtpTransport.sendMail(mailOptions, (error, response) => {
+    error ? console.log(error) : console.log(response);
+    smtpTransport.close();
+  });
 });
