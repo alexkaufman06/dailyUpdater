@@ -4,7 +4,8 @@ const axios = require('axios');
 const OAuth2 = google.auth.OAuth2;
 require('dotenv').config();
 
-const homeWeatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`;
+const homeWeatherHtmlURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`;
+const homeWeatherJsonURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&appid=${process.env.OPEN_WEATHER_API_KEY}`;
 
 const dayOfWeek = () => {
   var a = new Date();
@@ -19,51 +20,78 @@ const dayOfWeek = () => {
   return days[a.getDay()];
 }
 
-function getHomeWeather() {
-  return axios.get(homeWeatherURL);
+const convertUnixToTime = (unix) => {
+  var date = new Date(unix * 1000);
+  var hours = date.getHours();
+  var minutes = "0" + date.getMinutes();
+  var seconds = "0" + date.getSeconds();
+  return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
-getHomeWeather().then(function (response) {
-  const html = `
-    <p>It's ${dayOfWeek()},</p>
-    <p>Here's the weather at home:</p>
-    ${response.data}
-  `;
+const data = {};
 
-  const oauth2Client = new OAuth2(
-    process.env.CLIENT_ID, 
-    process.env.CLIENT_SECRET, 
-    "https://developers.google.com/oauthplayground" 
-  );
+const getHomeWeatherHtml = () => {
+  return axios.get(homeWeatherHtmlURL);
+}
 
-  oauth2Client.setCredentials({
-    refresh_token: process.env.REFRESH_TOKEN
+const getHomeWeatherJson = () => {
+  return axios.get(homeWeatherJsonURL);
+}
+
+getHomeWeatherHtml()
+  .then((getHomeWeatherHtml) => {
+    data.homeWeatherHtml = getHomeWeatherHtml;
+    return getHomeWeatherJson();
+  })
+  .then((getHomeWeatherJson) => {
+    const html = `
+      <p>It's ${dayOfWeek()},</p>
+      <p>Here's the weather at home:</p>
+      ${ data.homeWeatherHtml.data }
+      <br>
+      Temp min: ${ getHomeWeatherJson.data.main.temp_min }
+      <br>
+      Temp max: ${ getHomeWeatherJson.data.main.temp_max }
+      <br><br>
+      Sunrise: ${ convertUnixToTime(getHomeWeatherJson.data.sys.sunrise) }
+      <br>
+      Sunset: ${ convertUnixToTime(getHomeWeatherJson.data.sys.sunset) }
+    `;
+
+    const oauth2Client = new OAuth2(
+      process.env.CLIENT_ID, 
+      process.env.CLIENT_SECRET, 
+      "https://developers.google.com/oauthplayground" 
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: process.env.REFRESH_TOKEN
+    });
+
+    const accessToken = oauth2Client.getAccessToken()
+
+    const smtpTransport = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        type: 'OAuth2',
+        user: process.env.EMAIL,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: process.env.ACCESS_TOKEN
+      }
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: process.env.EMAIL,
+      subject: `${ new Date().toLocaleDateString() } Update`,
+      generateTextFromHTML: true,
+      html: html
+    };
+
+    smtpTransport.sendMail(mailOptions, (error, response) => {
+      error ? console.log(error) : console.log(response);
+      smtpTransport.close();
+    });
   });
-
-  const accessToken = oauth2Client.getAccessToken()
-
-  const smtpTransport = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: 'OAuth2',
-      user: process.env.EMAIL,
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      refreshToken: process.env.REFRESH_TOKEN,
-      accessToken: process.env.ACCESS_TOKEN
-     }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: process.env.EMAIL,
-    subject: `${ new Date().toLocaleDateString() } Update`,
-    generateTextFromHTML: true,
-    html: html
-  };
-
-  smtpTransport.sendMail(mailOptions, (error, response) => {
-    error ? console.log(error) : console.log(response);
-    smtpTransport.close();
-  });
-});
