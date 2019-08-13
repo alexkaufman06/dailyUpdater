@@ -39,23 +39,23 @@ const getHomeWeatherJson = () => {
 }
 
 getHomeWeatherHtml()
-  .then((getHomeWeatherHtml) => {
-    data.homeWeatherHtml = getHomeWeatherHtml;
+  .then((homeWeatherHtml) => {
+    data.homeWeatherHtml = homeWeatherHtml.data;
     return getHomeWeatherJson();
   })
-  .then((getHomeWeatherJson) => {
+  .then((homeWeatherJson) => {
     const html = `
       <p>It's ${dayOfWeek()},</p>
       <p>Here's the weather at home:</p>
-      ${ data.homeWeatherHtml.data }
+      ${ data.homeWeatherHtml }
       <br>
-      Temp min: ${ getHomeWeatherJson.data.main.temp_min }
+      Temp min: ${ homeWeatherJson.data.main.temp_min }
       <br>
-      Temp max: ${ getHomeWeatherJson.data.main.temp_max }
+      Temp max: ${ homeWeatherJson.data.main.temp_max }
       <br><br>
-      Sunrise: ${ convertUnixToTime(getHomeWeatherJson.data.sys.sunrise) }
+      Sunrise: ${ convertUnixToTime(homeWeatherJson.data.sys.sunrise) }
       <br>
-      Sunset: ${ convertUnixToTime(getHomeWeatherJson.data.sys.sunset) }
+      Sunset: ${ convertUnixToTime(homeWeatherJson.data.sys.sunset) }
     `;
 
     const oauth2Client = new OAuth2(
