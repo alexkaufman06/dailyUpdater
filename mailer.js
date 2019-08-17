@@ -72,10 +72,9 @@ getHomeWeatherHtml()
   })
   .then((quote) => {
     const html = `
-      <p>Happy ${dayOfWeek()},</p>
-      <p> ${ quote.data } </p>
+      <p>Happy ${dayOfWeek()}!</p>
       ${ data.homeWeatherHtml }
-      <br>
+      <p> ${ quote.data } </p>
       <p><strong>Dad Joke:</strong> ${ data.dadJoke } </p>
       <p><strong>Geek Joke:</strong> ${ data.geekJoke } </p>
       <p><strong>Temp min:</strong> ${ data.homeWeatherJson.main.temp_min } </p>
