@@ -6,6 +6,9 @@ require('dotenv').config();
 
 const homeWeatherHtmlURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&mode=html&appid=${process.env.OPEN_WEATHER_API_KEY}`;
 const homeWeatherJsonURL = `https://api.openweathermap.org/data/2.5/weather?lat=${process.env.MY_LATITUDE}&lon=${process.env.MY_LONGITUDE}&units=imperial&appid=${process.env.OPEN_WEATHER_API_KEY}`;
+const dadJokeURL = `https://icanhazdadjoke.com`;
+const geekJokeURL = `https://geek-jokes.sameerkumar.website/api`;
+const quoteURL = `https://api.forismatic.com/api/1.0/?method=getQuote&format=text&lang=en`;
 
 const dayOfWeek = () => {
   var a = new Date();
@@ -20,7 +23,7 @@ const dayOfWeek = () => {
   return days[a.getDay()];
 }
 
-const convertUnixToTime = (unix) => {
+const convertUnixToTime = (unix) => { // https://momentjs.com/timezone/
   var date = new Date(unix * 1000);
   var hours = date.getHours();
   var minutes = "0" + date.getMinutes();
@@ -38,25 +41,50 @@ const getHomeWeatherJson = () => {
   return axios.get(homeWeatherJsonURL);
 }
 
+const getDadJoke = () => {
+  return axios.get(dadJokeURL, { headers: { "Accept": "text/plain" } });
+}
+
+const getGeekJoke = () => {
+  return axios.get(geekJokeURL);
+}
+
+const getQuote = () => {
+  return axios.get(quoteURL);
+}
+
 getHomeWeatherHtml()
   .then((homeWeatherHtml) => {
     data.homeWeatherHtml = homeWeatherHtml.data;
     return getHomeWeatherJson();
   })
   .then((homeWeatherJson) => {
+    data.homeWeatherJson = homeWeatherJson.data;
+    return getDadJoke();
+  })
+  .then((dadJoke) => {
+    data.dadJoke = dadJoke.data;
+    return getGeekJoke();
+  })
+  .then((geekJoke) => {
+    data.geekJoke = geekJoke.data;
+    return getQuote();
+  })
+  .then((quote) => {
     const html = `
-      <p>It's ${dayOfWeek()},</p>
-      <p>Here's the weather at home:</p>
+      <p>Happy ${dayOfWeek()},</p>
+      <p> ${ quote.data } </p>
       ${ data.homeWeatherHtml }
       <br>
-      Temp min: ${ homeWeatherJson.data.main.temp_min }
-      <br>
-      Temp max: ${ homeWeatherJson.data.main.temp_max }
-      <br><br>
-      Sunrise: ${ convertUnixToTime(homeWeatherJson.data.sys.sunrise) }
-      <br>
-      Sunset: ${ convertUnixToTime(homeWeatherJson.data.sys.sunset) }
+      <p><strong>Dad Joke:</strong> ${ data.dadJoke } </p>
+      <p><strong>Geek Joke:</strong> ${ data.geekJoke } </p>
+      <p><strong>Temp min:</strong> ${ data.homeWeatherJson.main.temp_min } </p>
+      <p><strong>Temp max:</strong> ${ data.homeWeatherJson.main.temp_max } </p>
+      <p><strong>Sunrise:</strong> ${ convertUnixToTime(data.homeWeatherJson.sys.sunrise) } </p>
+      <p><strong>Sunset:</strong> ${ convertUnixToTime(data.homeWeatherJson.sys.sunset) } </p>
     `;
+
+    // console.log(html);
 
     const oauth2Client = new OAuth2(
       process.env.CLIENT_ID, 
